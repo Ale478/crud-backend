@@ -96,10 +96,22 @@ namespace crudcore.Resources
                     }
                 }
 
-                int i = cmd.ExecuteNonQuery();
-
-                result.Success = (i > 0) ? true : false;
-                result.Message = "";
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            result.Success = reader.GetBoolean(0);
+                            result.Message = reader.GetString(1);
+                        }
+                    }
+                    else
+                    {
+                        result.Success = false;
+                        result.Message = "No rows returned";
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -115,5 +127,4 @@ namespace crudcore.Resources
         }
     }
 }
-
      
