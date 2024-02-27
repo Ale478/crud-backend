@@ -20,6 +20,7 @@ public partial class DbcrudcoreContext : DbContext
     public virtual DbSet<TStatus> TStatuses { get; set; }
 
     public virtual DbSet<TUser> TUsers { get; set; }
+    public object T_USERS { get; internal set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder){ }
 
@@ -94,9 +95,7 @@ public partial class DbcrudcoreContext : DbContext
                 .HasMaxLength(100)
                 .IsUnicode(false);
 
-            entity.HasOne(d => d.IdStatusNavigation).WithMany(p => p.TUsers)
-                .HasForeignKey(d => d.IdStatus)
-                .HasConstraintName("FK__T_USERS__IdStatu__3B75D760");
+
         });
 
         OnModelCreatingPartial(modelBuilder);
