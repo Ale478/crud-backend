@@ -77,9 +77,10 @@ namespace crudcore.Resources
             }
         }
 
-        public static dynamic Launch(string procedure, List<Param_> param_ = null)
+        public static UserCreateResult Launch(string procedure, List<Param_> param_ = null)
         {
             SqlConnection connection = new SqlConnection(connectionsql);
+            UserCreateResult result = new UserCreateResult();
 
             try
             {
@@ -97,26 +98,20 @@ namespace crudcore.Resources
 
                 int i = cmd.ExecuteNonQuery();
 
-                bool success = (i > 0) ? true : false;
-
-                return new
-                {
-                    succ = success,
-                    message = ""
-                };
+                result.Success = (i > 0) ? true : false;
+                result.Message = "";
             }
             catch (Exception ex)
             {
-                return new
-                {
-                    success = false,
-                    message = ex.Message
-                };
+                result.Success = false;
+                result.Message = ex.Message;
             }
             finally
             {
                 connection.Close();
             }
+
+            return result;
         }
     }
 }

@@ -49,28 +49,19 @@ namespace crudcore.Controllers
 
         [HttpPost]
         [Route("CreateUser")]
-
-        public dynamic UserCreate(TUser user)
+        public UserCreateResult UserCreate(TUser user)
         {
             List<Param_> param_ = new List<Param_>
-        {
-            new Param_("@FirstName", user.FirstName),
-            new Param_("@LastName ", user.LastName),
-            new Param_("@Username ", user.Username),
-            new Param_("@Email", user.Email),
-            new Param_("@Pass", user.Pass),
-            new Param_("@IdStatus", user.IdStatus)
+    {
+        new Param_("@FirstName", user.FirstName),
+        new Param_("@LastName ", user.LastName),
+        new Param_("@Username ", user.Username),
+        new Param_("@Email", user.Email),
+        new Param_("@Pass", user.Pass),
+        new Param_("@IdStatus", user.IdStatus)
+    };
 
-        };
-
-            dynamic result = DBData.Launch("sp_CreateUser", param_);
-
-            return new
-            {
-                succ = result.success,
-                msge = result.message,
-                result = ""
-            };
+            return DBData.Launch("sp_CreateUser", param_);
         }
 
     }
