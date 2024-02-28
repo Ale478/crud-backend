@@ -2,6 +2,8 @@ CREATE DATABASE DBCRUDCORE;
 										
 USE DBCRUDCORE;
 
+
+
 CREATE TABLE T_STATUS (
     IdStatus INT PRIMARY KEY IDENTITY(1,1),
     StatusName VARCHAR(10) CHECK (StatusName IN ('A', 'I')),
@@ -14,6 +16,7 @@ CREATE TABLE T_STATUS (
 
 INSERT INTO T_STATUS (StatusName, StatusDescription, UserCreation, DateCreation)
 VALUES ('A', 'Activated', SUSER_SNAME(), GETDATE()), ('I', 'Inactivated', SUSER_SNAME(), GETDATE());
+
 
 CREATE TABLE T_USERS (
     IdUser INT PRIMARY KEY IDENTITY(1,1),
@@ -31,6 +34,7 @@ CREATE TABLE T_USERS (
     FOREIGN KEY (IdStatus) REFERENCES T_STATUS(IdStatus)
 );
 
+
 CREATE TABLE T_AUDIT_LOG (
     IdAuditLog INT PRIMARY KEY IDENTITY(1,1),
     IdUser INT,
@@ -38,7 +42,6 @@ CREATE TABLE T_AUDIT_LOG (
     AuditDate DATETIME,
     UserName VARCHAR(100),
 );
-
 
 
 CREATE PROC sp_CreateUser(
@@ -97,7 +100,6 @@ BEGIN
 END;
 
 
-
 CREATE PROC sp_ValidateUser(
     @Email VARCHAR(100),
     @Pass VARCHAR(500)
@@ -122,39 +124,40 @@ BEGIN
 END;
 
 
-CREATE PROC sp_ReadUser
+CREATE PROCEDURE sp_ReadUser(
     @IdUser INT = NULL,
     @ShowAllUsers BIT = 0
+)
 AS
 BEGIN
     DECLARE @CurrentUsername VARCHAR(100);
 
-    SELECT @CurrentUsername = Username FROM T_USERS WHERE IdUser = @IdUser;
-
-    IF @ShowAllUsers = 1
+    IF EXISTS (SELECT 1 FROM T_USERS WHERE IdUser = @IdUser)
     BEGIN
-        SELECT 
-            U.IdUser,
-            U.FirstName,
-            U.LastName,
-            U.Username,
-            U.Email,
-            U.IdStatus,
-            S.StatusName,
-            S.StatusDescription,
-            U.UserCreation,
-            U.DateCreation,
-            U.UserModification,
-            U.DateModification
-        FROM T_USERS U
-        INNER JOIN T_STATUS S ON U.IdStatus = S.IdStatus;
+		SELECT @CurrentUsername = Username FROM T_USERS WHERE IdUser = @IdUser;
 
-        INSERT INTO T_AUDIT_LOG (IdUser, AuditType, AuditDate, UserName)
-        VALUES (@IdUser, 'read all', GETDATE(), @CurrentUsername);
-    END
-    ELSE
-    BEGIN
-        IF @IdUser IS NOT NULL
+        IF @ShowAllUsers = 1
+        BEGIN
+            SELECT 
+                U.IdUser,
+                U.FirstName,
+                U.LastName,
+                U.Username,
+                U.Email,
+                U.IdStatus,
+                S.StatusName,
+                S.StatusDescription,
+                U.UserCreation,
+                U.DateCreation,
+                U.UserModification,
+                U.DateModification
+            FROM T_USERS U
+            INNER JOIN T_STATUS S ON U.IdStatus = S.IdStatus;
+
+            INSERT INTO T_AUDIT_LOG (IdUser, AuditType, AuditDate, UserName)
+            VALUES (@IdUser, 'read all', GETDATE(), @CurrentUsername);
+        END
+        ELSE
         BEGIN
             SELECT 
                 U.IdUser,
@@ -171,17 +174,18 @@ BEGIN
                 U.DateModification
             FROM T_USERS U
             INNER JOIN T_STATUS S ON U.IdStatus = S.IdStatus
-            WHERE IdUser = @IdUser;
+            WHERE U.IdUser = @IdUser;
 
             INSERT INTO T_AUDIT_LOG (IdUser, AuditType, AuditDate, UserName)
             VALUES (@IdUser, 'read', GETDATE(), @CurrentUsername);
         END
-        ELSE
-        BEGIN
-            SELECT 'No se proporcionó un IdUser válido' AS ErrorMessage;
-        END
+    END
+    ELSE
+    BEGIN
+        SELECT 'User not found with IdUser provided' AS ErrorMessage;
     END
 END;
+
 
 CREATE PROC sp_UpdateUser( 
 	@IdUser INT, 
@@ -193,46 +197,58 @@ CREATE PROC sp_UpdateUser(
 	@IdStatus INT, 
 	@ModifyBy VARCHAR(100)
 	)
-	AS 
-	BEGIN
-		UPDATE T_USERS
-		SET FirstName = @FirstName,
-			LastName = @LastName,
-			Username = @Username,
-			Email = @Email,
-			Pass = @Pass,
-			IdStatus = @IdStatus,
-			UserModification = @ModifyBy,
-			DateModification = GETDATE()
-		WHERE IdUser = @IdUser;
+AS 
+BEGIN
+	UPDATE T_USERS
+	SET FirstName = @FirstName,
+		LastName = @LastName,
+		Username = @Username,
+		Email = @Email,
+		Pass = @Pass,
+		IdStatus = @IdStatus,
+		UserModification = @ModifyBy,
+		DateModification = GETDATE()
+	WHERE IdUser = @IdUser;
+	INSERT INTO T_AUDIT_LOG (IdUser, AuditType, AuditDate, UserName)
+	VALUES (@IdUser, 'update', GETDATE(), @UserName);
+END;
 
-		INSERT INTO T_AUDIT_LOG (IdUser, AuditType, AuditDate, UserName)
-		VALUES (@IdUser, 'update', GETDATE(), @UserName);
-	END;
 
-
-CREATE PROC sp_RemoveUser(
+CREATE PROC sp_DeleteUser(
     @IdUser INT,
     @ModifyBy VARCHAR(100)
 )
 AS
 BEGIN
+    DECLARE @UserCount INT;
 
+    -- Check if the user exists
+    SELECT @UserCount = COUNT(*) FROM T_USERS WHERE IdUser = @IdUser;
+
+    IF @UserCount = 0
+    BEGIN
+        -- User not found, return an error message
+        SELECT 'User not found' AS ErrorMessage;
+        RETURN;
+    END
+
+    -- Delete the user and audit log
     DELETE FROM T_AUDIT_LOG WHERE IdUser = @IdUser;
-
     DELETE FROM T_USERS WHERE IdUser = @IdUser;
 
+    -- Insert a new audit log record
     INSERT INTO T_AUDIT_LOG (IdUser, AuditType, AuditDate, UserName)
     VALUES (@IdUser, 'delete', GETDATE(), @ModifyBy);
 END;
 
 
-CREATE PROC sp_GetAuditLogs
+CREATE PROC sp_GetAuditLogs(
     @PageSize INT,
     @PageNumber INT,
     @IncludeDate BIT = 0,
     @StartDate DATETIME = NULL,
     @EndDate DATETIME = NULL
+)
 AS
 BEGIN
     DECLARE @TotalRows INT;
@@ -271,128 +287,4 @@ BEGIN
 END;
 
 							
-
-
--- Create a new user
-
-DECLARE @FirstName VARCHAR(100) = 'Alejandra';
-DECLARE @LastName VARCHAR(100) = 'Linares';
-DECLARE @Username VARCHAR(100) = 'ale478';
-DECLARE @Email VARCHAR(100) = 'ale@gmail.com';
-DECLARE @Pass VARCHAR(500) = 'a62039e2dd75ceffa3b72c632010c53a';
-DECLARE @IdStatus INT = 1;
-
-
-EXEC sp_CreateUser @FirstName, @LastName,@Username, @Email, @Pass, @IdStatus;
-
-SELECT @Register AS Registered, @Message AS Message;
-
-
-DECLARE @FirstName VARCHAR(100) = 'Jahi';
-DECLARE @LastName VARCHAR(100) = 'Linares';
-DECLARE @Username VARCHAR(100) = 'jahi84';
-DECLARE @Email VARCHAR(100) = 'jahi@gmail.com';
-DECLARE @Pass VARCHAR(500) = 'a620d39e2dd75ceffa3b72c632010c53a';
-DECLARE @IdStatus INT = 1;
-DECLARE @Register BIT;
-DECLARE @Message VARCHAR(100);
-
-EXEC sp_CreateUser @FirstName, @LastName,@Username, @Email, @Pass, @Status, @Register OUTPUT, @Message OUTPUT;
-
-SELECT @Register AS Registered, @Message AS Message;
-
-DECLARE @FirstName VARCHAR(100) = 'Antonio';
-DECLARE @LastName VARCHAR(100) = 'Linares';
-DECLARE @Username VARCHAR(100) = 'antonio1503';
-DECLARE @Email VARCHAR(100) = 'antonio@gmail.com';
-DECLARE @Pass VARCHAR(500) = 'a62039e25dd75ceffa3b72c632010c53a';
-DECLARE @IdStatus INT = 1;
-DECLARE @Register BIT;
-DECLARE @Message VARCHAR(100);
-
-EXEC sp_CreateUser @FirstName, @LastName,@Username, @Email, @Pass, @Status, @Register OUTPUT, @Message OUTPUT;
-
-SELECT @Register AS Registered, @Message AS Message;
-
-DECLARE @FirstName VARCHAR(100) = 'Lilu';
-DECLARE @LastName VARCHAR(100) = 'Molina';
-DECLARE @Username VARCHAR(100) = 'lilu213';
-DECLARE @Email VARCHAR(100) = 'lilu@gmail.com';
-DECLARE @Pass VARCHAR(500) = 'a620339e25dd75ceffa3b72c632010c53a';
-DECLARE @IdStatus INT = 1;
-DECLARE @Register BIT;
-DECLARE @Message VARCHAR(100);
-
-EXEC sp_CreateUser @FirstName, @LastName,@Username, @Email, @Pass, @Status, @Register OUTPUT, @Message OUTPUT;
-
-SELECT @Register AS Registered, @Message AS Message;
-
-DECLARE @FirstName VARCHAR(100) = 'Anni';
-DECLARE @LastName VARCHAR(100) = 'Linamol';
-DECLARE @Username VARCHAR(100) = 'anni03';
-DECLARE @Email VARCHAR(100) = 'anni@gmail.com';
-DECLARE @Pass VARCHAR(500) = 'a6203439e25dd75ceffa3b72c632010c53a';
-DECLARE @IdStatus INT = 1;
-DECLARE @Register BIT;
-DECLARE @Message VARCHAR(100);
-
-EXEC sp_CreateUser @FirstName, @LastName,@Username, @Email, @Pass, @Status, @Register OUTPUT, @Message OUTPUT;
-
-SELECT @Register AS Registered, @Message AS Message;
-
-
--- Validate user
-DECLARE @Email VARCHAR(100) = 'ale@gmail.com';
-DECLARE @Pass VARCHAR(500) = 'a62039e2dd75ceffa3b72c632010c53a';
-
-EXEC sp_ValidateUser @Email, @Pass;
-
--- Read users
--- 1 User
-EXEC sp_ReadUser @IdUser = 1, @ShowAllUsers = 0;
-
---All Users
-EXEC sp_ReadUser  @IdUser = 1, @ShowAllUsers = 1;
-
--- Update user
-DECLARE @IdUser INT = 3;
-DECLARE @FirstName VARCHAR(100) = 'Alejandra Updated';
-DECLARE @LastName VARCHAR(100) = 'Linares Updated';
-DECLARE @Username VARCHAR(100) = 'ale478 Updated';
-DECLARE @Email VARCHAR(100) = 'ale@gmail.com Updated';
-DECLARE @Pass VARCHAR(500) = 'a62039e2dd75ceffa3b72c632010c53a Updated';
-DECLARE @IdStatus INT = 2;
-DECLARE @ModifiedBy VARCHAR(100) = @Username;
-
-EXEC sp_UpdateUser @IdUser, @FirstName, @LastName, @Username, @Email, @Pass, @IdStatus, @ModifiedBy;
-
--- Remove user
-DECLARE @IdUser INT = 1;
-DECLARE @ModifiedBy VARCHAR(100);
-
-SELECT @ModifiedBy = Username FROM T_USERS WHERE IdUser = @IdUser;
-
-EXEC sp_RemoveUser @IdUser, @ModifiedBy;
-
--- Display audit logs
-DECLARE @PageSize INT = 10;
-DECLARE @PageNumber INT = 1;
-DECLARE @IncludeDate BIT = 1;
-DECLARE @StartDate DATETIME = '2024-02-26';
-DECLARE @EndDate DATETIME = '2022-02-26';
-
-EXEC sp_GetAuditLogs @PageSize, @PageNumber, @IncludeDate, @StartDate, @EndDate;
-
-
-DECLARE @PageSize INT = 15;
-DECLARE @PageNumber INT = 1;
-DECLARE @IncludeDate BIT = 0;
-DECLARE @AuditDate DATETIME = NULL;
-
-EXEC sp_GetAuditLogs @PageSize, @PageNumber, @IncludeDate, @AuditDate;
-
--- Display status legend
-SELECT StatusName, StatusDescription
-FROM T_STATUS;
-
 

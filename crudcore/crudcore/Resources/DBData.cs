@@ -2,6 +2,7 @@
 using crudcore.Models;
 using System.Data;
 using System.Data.SqlClient;
+using System.Reflection;
 using System.Reflection.Metadata;
 
 
@@ -45,9 +46,10 @@ namespace crudcore.Resources
             }
         }
 
-        public static DataTable List_(string procedure, List<Param_> param_ = null)
+        public static UserCreateResult List_<T>(string procedure, List<Param_> param_ = null) where T : new()
         {
             SqlConnection connection = new SqlConnection(connectionsql);
+            UserCreateResult result = new UserCreateResult();
 
             try
             {
@@ -62,21 +64,45 @@ namespace crudcore.Resources
                         cmd.Parameters.AddWithValue(param__.Name_, param__.Value_);
                     }
                 }
-                DataTable tabla = new DataTable();
-                SqlDataAdapter da = new SqlDataAdapter(cmd);
-                da.Fill(tabla);
 
-
-                return tabla;
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            result.Success = reader.GetBoolean(0);
+                            result.Message = reader.GetString(1);
+                        }
+                    }
+                    else
+                    {
+                        result.Success = false;
+                        result.Message = "No rows returned";
+                    }
+                }
             }
             catch (Exception ex)
             {
-                return null;
+                result.Success = false;
+                result.Message = $"Error executing stored procedure '{procedure}': {ex.Message}";
             }
             finally
             {
                 connection.Close();
             }
+
+            if (result.Success && string.IsNullOrEmpty(result.Message))
+            {
+                result.Message = "No rows returned";
+            }
+
+            if (!result.Success && !string.IsNullOrEmpty(result.Message))
+            {
+                result.Message = $"User not found with IdUser provided";
+            }
+
+            return result;
         }
 
         public static UserCreateResult UserCreate(string procedure, List<Param_> param_ = null)
@@ -139,18 +165,13 @@ namespace crudcore.Resources
             {
                 connection.Open();
                 SqlCommand cmd = new SqlCommand(procedure, connection);
-                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                cmd.CommandType = CommandType.StoredProcedure;
 
                 if (param_ != null)
                 {
                     foreach (var param__ in param_)
                     {
-                        if (string.IsNullOrEmpty(param__.Value_))
-                        {
-                            throw new ArgumentException($"El valor del parámetro '{param__.Name_}' no puede ser nulo o vacío.");
-                        }
                         cmd.Parameters.AddWithValue(param__.Name_, param__.Value_);
-                        
                     }
                 }
 
@@ -179,5 +200,46 @@ namespace crudcore.Resources
 
             return result;
         }
+
+        public static UpdateUserResult DeleteUser(int idUser, string modifyBy)
+        {
+            SqlConnection connection = new SqlConnection(connectionsql);
+            UpdateUserResult result = new UpdateUserResult();
+
+            try
+            {
+                connection.Open();
+                SqlCommand cmd = new SqlCommand("sp_DeleteUser", connection);
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+
+                cmd.Parameters.AddWithValue("@IdUser", idUser);
+                cmd.Parameters.AddWithValue("@ModifyBy", modifyBy);
+
+                int rowsAffected = cmd.ExecuteNonQuery();
+
+                if (rowsAffected > 0)
+                {
+                    result.Success = true;
+                    result.Message = "User deleted successfully.";
+                }
+                else
+                {
+                    result.Success = false;
+                    result.Message = "No rows deleted.";
+                }
+            }
+            catch (Exception ex)
+            {
+                result.Success = false;
+                result.Message = ex.Message;
+            }
+            finally
+            {
+                connection.Close();
+            }
+
+            return result;
+        }
     }
+
 }
