@@ -27,6 +27,7 @@ CREATE TABLE T_USERS (
     DateCreation DATETIME,
     UserModification VARCHAR(100),
     DateModification DATETIME,
+	ModifyBy VARCHAR(100)
     FOREIGN KEY (IdStatus) REFERENCES T_STATUS(IdStatus)
 );
 
@@ -182,33 +183,32 @@ BEGIN
     END
 END;
 
-CREATE PROC sp_EditUser(
-    @IdUser INT,
-    @FirstName VARCHAR(100),
-    @LastName VARCHAR(100),
-    @Username VARCHAR(100),
-    @Email VARCHAR(100),
-    @Pass VARCHAR(500),
-    @IdStatus INT,
-    @ModifyBy VARCHAR(100)
-)
-AS
-BEGIN
+CREATE PROC sp_UpdateUser( 
+	@IdUser INT, 
+	@FirstName VARCHAR(100), 
+	@LastName VARCHAR(100),
+	@Username VARCHAR(100),
+	@Email VARCHAR(100),
+	@Pass VARCHAR(500), 
+	@IdStatus INT, 
+	@ModifyBy VARCHAR(100)
+	)
+	AS 
+	BEGIN
+		UPDATE T_USERS
+		SET FirstName = @FirstName,
+			LastName = @LastName,
+			Username = @Username,
+			Email = @Email,
+			Pass = @Pass,
+			IdStatus = @IdStatus,
+			UserModification = @ModifyBy,
+			DateModification = GETDATE()
+		WHERE IdUser = @IdUser;
 
-    UPDATE T_USERS
-    SET FirstName = @FirstName,
-        LastName = @LastName,
-        Username = @Username,
-        Email = @Email,
-        Pass = @Pass,
-        IdStatus = @IdStatus,
-        UserModification = @ModifyBy,
-        DateModification = GETDATE()
-    WHERE IdUser = @IdUser;
-
-    INSERT INTO T_AUDIT_LOG (IdUser, AuditType, AuditDate, UserName)
-    VALUES (@IdUser, 'edit', GETDATE(), @UserName);
-END;
+		INSERT INTO T_AUDIT_LOG (IdUser, AuditType, AuditDate, UserName)
+		VALUES (@IdUser, 'update', GETDATE(), @UserName);
+	END;
 
 
 CREATE PROC sp_RemoveUser(
@@ -355,16 +355,16 @@ EXEC sp_ReadUser @IdUser = 1, @ShowAllUsers = 0;
 EXEC sp_ReadUser  @IdUser = 1, @ShowAllUsers = 1;
 
 -- Update user
-DECLARE @IdUser INT = 2;
+DECLARE @IdUser INT = 3;
 DECLARE @FirstName VARCHAR(100) = 'Alejandra Updated';
 DECLARE @LastName VARCHAR(100) = 'Linares Updated';
 DECLARE @Username VARCHAR(100) = 'ale478 Updated';
 DECLARE @Email VARCHAR(100) = 'ale@gmail.com Updated';
 DECLARE @Pass VARCHAR(500) = 'a62039e2dd75ceffa3b72c632010c53a Updated';
-DECLARE @IdStatus INT = 1;
+DECLARE @IdStatus INT = 2;
 DECLARE @ModifiedBy VARCHAR(100) = @Username;
 
-EXEC sp_EditUser @IdUser, @FirstName, @LastName, @Username, @Email, @Pass, @IdStatus, @ModifiedBy;
+EXEC sp_UpdateUser @IdUser, @FirstName, @LastName, @Username, @Email, @Pass, @IdStatus, @ModifiedBy;
 
 -- Remove user
 DECLARE @IdUser INT = 1;

@@ -15,7 +15,7 @@ namespace crudcore.Controllers
     public class UserController : ControllerBase
     {
         [HttpGet]
-        [Route("Read")]
+        [Route("ReadUser")]
         public dynamic ReadUser(int? idUser = null, bool? showAllUsers = null)
         {
             List<Param_> param_ = new List<Param_>();
@@ -49,24 +49,59 @@ namespace crudcore.Controllers
 
         [HttpPost]
         [Route("CreateUser")]
-        public UserCreateResult UserCreate(TUser user)
+        public UserCreateResult CreateUser(TUser user)
         {
             List<Param_> param_ = new List<Param_>
-    {
-        new Param_("@FirstName", user.FirstName),
-        new Param_("@LastName ", user.LastName),
-        new Param_("@Username ", user.Username),
-        new Param_("@Email", user.Email),
-        new Param_("@Pass", user.Pass),
-        new Param_("@IdStatus", user.IdStatus)
-    };
+            {
+                new Param_("@FirstName", user.FirstName),
+                new Param_("@LastName ", user.LastName),
+                new Param_("@Username ", user.Username),
+                new Param_("@Email", user.Email),
+                new Param_("@Pass", user.Pass),
+                new Param_("@IdStatus", user.IdStatus)
+            };
 
-            return DBData.Launch("sp_CreateUser", param_);
+            return DBData.UserCreate("sp_CreateUser", param_);
+        }
+
+
+        [HttpPut]
+        [Route("UpdateUser")]
+        public UpdateUserResult UpdateUser(TUser user)
+        {
+     
+
+            List<Param_> param_ = new List<Param_>
+            {
+                new Param_("@IdUser", user.IdUser),
+                new Param_("@FirstName", user.FirstName),
+                new Param_("@LastName", user.LastName),
+                new Param_("@Username", user.Username),
+                new Param_("@Email", user.Email),
+                new Param_("@Pass", user.Pass),
+                new Param_("@IdStatus", user.IdStatus),
+                new Param_("@ModifyBy", user.ModifyBy)
+            };
+
+            var result = DBData.UpdateResult("sp_UpdateUser", param_);
+
+            if (result.Success)
+            {
+                result.Success = true;
+                result.Message = "User updated successfully.";
+                result.LastModifiedBy = user.ModifyBy; 
+            }
+            else
+            {
+                result.Success = false;
+                result.Message = $"Error updating user: {result.Message}";
+            }
+            return result;
         }
 
     }
-
 }
+
 
    
  

@@ -11,7 +11,7 @@ namespace crudcore.Models;
 
 public partial class TUser
 {
-    [JsonIgnore]
+   
     public string IdUser { get; set; }
 
     public string? FirstName { get; set; }
@@ -33,6 +33,9 @@ public partial class TUser
     public string? UserModification { get; set; }
 
     public DateTime? DateModification { get; set; }
+
+    public string ModifyBy { get; set; }
+
 
     public virtual TStatus? IdStatusNavigation { get; set; }
 }
