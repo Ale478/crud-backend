@@ -20,7 +20,6 @@ namespace crudcore.Controllers
         {
             List<Param_> param_ = new List<Param_>();
 
-
             if (idUser.HasValue)
             {
                 param_.Add(new Param_("@IdUser", idUser.Value.ToString()));
@@ -28,28 +27,40 @@ namespace crudcore.Controllers
 
             if (showAllUsers.HasValue)
             {
-
                 param_.Add(new Param_("@ShowAllUsers", showAllUsers.Value.ToString()));
             }
 
-            DataTable tUser = DBData.List_("sp_ReadUser", param_);
+            UserResult result = DBData.List_<TUser>("sp_ReadUser", param_);
 
-            string jsonUser = JsonConvert.SerializeObject(tUser);
-
-            return new
+            if (result.Success)
             {
-                success = true,
-                message = "exito",
-                result = new
+                return new
                 {
-                    user = JsonConvert.DeserializeObject<List<TUser>>(jsonUser)
-                }
-            };
+                    success = true,
+                    message = "exito",
+                    result = new
+                    {
+                        user = result.Result
+                    }
+                };
+            }
+            else
+            {
+                return new
+                {
+                    success = false,
+                    message = result.Message,
+                    result = new
+                    {
+                        user = new List<TUser>()
+                    }
+                };
+            }
         }
 
         [HttpPost]
         [Route("CreateUser")]
-        public UserCreateResult CreateUser(TUser user)
+        public UserResult CreateUser(TUser user)
         {
             List<Param_> param_ = new List<Param_>
             {
@@ -95,6 +106,26 @@ namespace crudcore.Controllers
             {
                 result.Success = false;
                 result.Message = $"Error updating user: {result.Message}";
+            }
+            return result;
+        }
+
+        [HttpDelete]
+        [Route("DeleteUser")]
+        public dynamic DeleteUser(int idUser, string modifyBy)
+        {
+            var result = DBData.DeleteUser(idUser, modifyBy);
+
+            if (result.Success)
+            {
+                result.Success = true;
+                result.Message = "User deleted successfully.";
+                result.LastModifiedBy = modifyBy;
+            }
+            else
+            {
+                result.Success = false;
+                result.Message = $"Error deleting user: {result.Message}";
             }
             return result;
         }

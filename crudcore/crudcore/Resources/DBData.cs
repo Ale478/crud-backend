@@ -46,10 +46,10 @@ namespace crudcore.Resources
             }
         }
 
-        public static UserCreateResult List_<T>(string procedure, List<Param_> param_ = null) where T : new()
+        public static UserResult List_<T>(string procedure, List<Param_> param_ = null) where T : new()
         {
             SqlConnection connection = new SqlConnection(connectionsql);
-            UserCreateResult result = new UserCreateResult();
+            UserResult result = new UserResult();
 
             try
             {
@@ -105,10 +105,69 @@ namespace crudcore.Resources
             return result;
         }
 
-        public static UserCreateResult UserCreate(string procedure, List<Param_> param_ = null)
+        public static AuditLogResult List_AuditLogs(string procedure, List<Param_> param_ = null)
         {
             SqlConnection connection = new SqlConnection(connectionsql);
-            UserCreateResult result = new UserCreateResult();
+            AuditLogResult result = new AuditLogResult();
+
+            try
+            {
+                connection.Open();
+                SqlCommand cmd = new SqlCommand(procedure, connection);
+                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+
+                if (param_ != null)
+                {
+                    foreach (var param__ in param_)
+                    {
+                        cmd.Parameters.AddWithValue(param__.Name_, param__.Value_);
+                    }
+                }
+
+                using (SqlDataReader reader = cmd.ExecuteReader())
+                {
+                    if (reader.HasRows)
+                    {
+                        var auditLogs = new List<TAuditLog>();
+                        while (reader.Read())
+                        {
+                            var auditLog = new TAuditLog
+                            {
+                                IdAuditLog = reader.GetInt32(0).ToString(),
+                                IdUser = reader.GetInt32(1).ToString(),
+                                AuditType = reader.GetString(2),
+                                AuditDate = reader.GetDateTime(3),
+                                UserName = reader.GetString(4)
+                            };
+                            auditLogs.Add(auditLog);
+                        }
+                        result.AuditLogs = auditLogs;
+                    }
+                    else
+                    {
+                        result.AuditLogs = new List<TAuditLog>();
+                    }
+                }
+                result.Success = true;
+            }
+            catch (Exception ex)
+            {
+                result.Success = false;
+                result.Message = $"Error executing stored procedure '{procedure}': {ex.Message}";
+            }
+            finally
+            {
+                connection.Close();
+            }
+
+            return result;
+        }
+
+
+        public static UserResult UserCreate(string procedure, List<Param_> param_ = null)
+        {
+            SqlConnection connection = new SqlConnection(connectionsql);
+            UserResult result = new UserResult();
 
             try
             {

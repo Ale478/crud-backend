@@ -1,6 +1,6 @@
 ﻿namespace crudcore.Resources
 {
-    public class UpdateUserResult : UserCreateResult
+    public class UpdateUserResult : UserResult
     {
         public string LastModifiedBy { get; set; }
     }

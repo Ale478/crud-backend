@@ -114,7 +114,7 @@ EXEC sp_DeleteUser @IdUser, @ModifiedBy;
 
 
 -- Display audit logs
-DECLARE @PageSize INT = 10;
+DECLARE @PageSize INT = 1;
 DECLARE @PageNumber INT = 1;
 DECLARE @IncludeDate BIT = 1;
 DECLARE @StartDate DATETIME = '2024-02-26';
