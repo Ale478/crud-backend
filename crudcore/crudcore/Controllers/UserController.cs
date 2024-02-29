@@ -33,7 +33,7 @@ namespace crudcore.Controllers
 
             param_.Add(new Param_("@ErrorMessage", ""));
 
-            DataTable tUser = DBData.List_("sp_ReadUser", param_);
+            var tUser = DBData.List_("sp_ReadUser", param_);
 
             if (tUser.Rows.Count == 0)
             {

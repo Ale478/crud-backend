@@ -244,7 +244,7 @@ namespace crudcore.Resources
             {
                 connection.Open();
                 SqlCommand cmd = new SqlCommand("sp_DeleteUser", connection);
-                cmd.CommandType = System.Data.CommandType.StoredProcedure;
+                cmd.CommandType = CommandType.StoredProcedure;
 
                 cmd.Parameters.AddWithValue("@IdUser", idUser);
                 cmd.Parameters.AddWithValue("@ModifyBy", modifyBy);

@@ -36,6 +36,6 @@ public partial class TUser
 
     public string ModifyBy { get; set; }
 
-
+    [JsonIgnore]
     public virtual TStatus? IdStatusNavigation { get; set; }
 }

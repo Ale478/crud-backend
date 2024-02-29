@@ -9,13 +9,9 @@ DECLARE @Username VARCHAR(100) = 'ale478';
 DECLARE @Email VARCHAR(100) = 'ale@gmail.com';
 DECLARE @Pass VARCHAR(500) = 'a62039e2dd75ceffa3b72c632010c53a';
 DECLARE @IdStatus INT = 1;
-DECLARE @Register BIT;
-DECLARE @Message VARCHAR(100);
 
+EXEC sp_CreateUser @FirstName, @LastName,@Username, @Email, @Pass, @IdStatus;
 
-EXEC sp_CreateUser @FirstName, @LastName,@Username, @Email, @Pass, @IdStatus, @Register OUTPUT, @Message OUTPUT;
-
-SELECT @Register AS Registered, @Message AS Message;
 
 
 DECLARE @FirstName VARCHAR(100) = 'Jahi';
@@ -24,12 +20,10 @@ DECLARE @Username VARCHAR(100) = 'jahi84';
 DECLARE @Email VARCHAR(100) = 'jahi@gmail.com';
 DECLARE @Pass VARCHAR(500) = 'a620d39e2dd75ceffa3b72c632010c53a';
 DECLARE @IdStatus INT = 1;
-DECLARE @Register BIT;
-DECLARE @Message VARCHAR(100);
 
-EXEC sp_CreateUser @FirstName, @LastName,@Username, @Email, @Pass, @IdStatus, @Register OUTPUT, @Message OUTPUT;
 
-SELECT @Register AS Registered, @Message AS Message;
+EXEC sp_CreateUser @FirstName, @LastName,@Username, @Email, @Pass, @IdStatus;
+
 
 DECLARE @FirstName VARCHAR(100) = 'Antonio';
 DECLARE @LastName VARCHAR(100) = 'Linares';
@@ -37,12 +31,10 @@ DECLARE @Username VARCHAR(100) = 'antonio1503';
 DECLARE @Email VARCHAR(100) = 'antonio@gmail.com';
 DECLARE @Pass VARCHAR(500) = 'a62039e25dd75ceffa3b72c632010c53a';
 DECLARE @IdStatus INT = 1;
-DECLARE @Register BIT;
-DECLARE @Message VARCHAR(100);
 
-EXEC sp_CreateUser @FirstName, @LastName,@Username, @Email, @Pass, @IDStatus, @Register OUTPUT, @Message OUTPUT;
+EXEC sp_CreateUser @FirstName, @LastName,@Username, @Email, @Pass, @IDStatus;
 
-SELECT @Register AS Registered, @Message AS Message;
+
 
 DECLARE @FirstName VARCHAR(100) = 'Lilu';
 DECLARE @LastName VARCHAR(100) = 'Molina';
@@ -50,12 +42,9 @@ DECLARE @Username VARCHAR(100) = 'lilu213';
 DECLARE @Email VARCHAR(100) = 'lilu@gmail.com';
 DECLARE @Pass VARCHAR(500) = 'a620339e25dd75ceffa3b72c632010c53a';
 DECLARE @IdStatus INT = 1;
-DECLARE @Register BIT;
-DECLARE @Message VARCHAR(100);
 
-EXEC sp_CreateUser @FirstName, @LastName,@Username, @Email, @Pass, @IdStatus, @Register OUTPUT, @Message OUTPUT;
+EXEC sp_CreateUser @FirstName, @LastName,@Username, @Email, @Pass, @IdStatus;
 
-SELECT @Register AS Registered, @Message AS Message;
 
 DECLARE @FirstName VARCHAR(100) = 'Anni';
 DECLARE @LastName VARCHAR(100) = 'Linamol';
@@ -63,12 +52,10 @@ DECLARE @Username VARCHAR(100) = 'anni03';
 DECLARE @Email VARCHAR(100) = 'anni@gmail.com';
 DECLARE @Pass VARCHAR(500) = 'a6203439e25dd75ceffa3b72c632010c53a';
 DECLARE @IdStatus INT = 1;
-DECLARE @Register BIT;
-DECLARE @Message VARCHAR(100);
 
-EXEC sp_CreateUser @FirstName, @LastName,@Username, @Email, @Pass, @IdStatus, @Register OUTPUT, @Message OUTPUT;
+EXEC sp_CreateUser @FirstName, @LastName,@Username, @Email, @Pass, @IdStatus;
 
-SELECT @Register AS Registered, @Message AS Message;
+
 
 
 
@@ -87,7 +74,7 @@ EXEC sp_ReadUser @IdUser = 1, @ShowAllUsers = 0;
 --All Users
 DECLARE @ErrorMessage NVARCHAR(100);
 
-EXEC sp_ReadUser @IdUser = 10, @ShowAllUsers = 1, @ErrorMessage = @ErrorMessage OUTPUT;
+EXEC sp_ReadUser @IdUser = 1, @ShowAllUsers = 1, @ErrorMessage = @ErrorMessage OUTPUT;
 
 SELECT @ErrorMessage AS ErrorMessage;
 
