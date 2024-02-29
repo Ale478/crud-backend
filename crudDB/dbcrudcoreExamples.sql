@@ -79,14 +79,17 @@ DECLARE @Pass VARCHAR(500) = 'a62039e2dd75ceffa3b72c632010c53a';
 EXEC sp_ValidateUser @Email, @Pass;
 
 
-
+						   select * from T_USERS
 -- Read users
 -- 1 User
 EXEC sp_ReadUser @IdUser = 1, @ShowAllUsers = 0;
 
 --All Users
-EXEC sp_ReadUser  @IdUser = 45, @ShowAllUsers = 1;
+DECLARE @ErrorMessage NVARCHAR(100);
 
+EXEC sp_ReadUser @IdUser = 10, @ShowAllUsers = 1, @ErrorMessage = @ErrorMessage OUTPUT;
+
+SELECT @ErrorMessage AS ErrorMessage;
 
 
 -- Update user

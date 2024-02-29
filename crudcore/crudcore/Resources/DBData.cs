@@ -1,7 +1,9 @@
 ﻿using Azure.Identity;
 using crudcore.Models;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using System.Data;
 using System.Data.SqlClient;
+using System.Net.NetworkInformation;
 using System.Reflection;
 using System.Reflection.Metadata;
 
@@ -45,11 +47,9 @@ namespace crudcore.Resources
                 connection.Close();
             }
         }
-
-        public static UserResult List_<T>(string procedure, List<Param_> param_ = null) where T : new()
+            public static DataTable List_(string procedure, List<Param_> param_ = null)
         {
             SqlConnection connection = new SqlConnection(connectionsql);
-            UserResult result = new UserResult();
 
             try
             {
@@ -64,47 +64,22 @@ namespace crudcore.Resources
                         cmd.Parameters.AddWithValue(param__.Name_, param__.Value_);
                     }
                 }
+                DataTable tabla = new DataTable();
+                SqlDataAdapter da = new SqlDataAdapter(cmd);
+                da.Fill(tabla);
 
-                using (SqlDataReader reader = cmd.ExecuteReader())
-                {
-                    if (reader.HasRows)
-                    {
-                        while (reader.Read())
-                        {
-                            result.Success = reader.GetBoolean(0);
-                            result.Message = reader.GetString(1);
-                        }
-                    }
-                    else
-                    {
-                        result.Success = false;
-                        result.Message = "No rows returned";
-                    }
-                }
+
+                return tabla;
             }
             catch (Exception ex)
             {
-                result.Success = false;
-                result.Message = $"Error executing stored procedure '{procedure}': {ex.Message}";
+                return null;
             }
             finally
             {
                 connection.Close();
             }
-
-            if (result.Success && string.IsNullOrEmpty(result.Message))
-            {
-                result.Message = "No rows returned";
-            }
-
-            if (!result.Success && !string.IsNullOrEmpty(result.Message))
-            {
-                result.Message = $"User not found with IdUser provided";
-            }
-
-            return result;
         }
-
         public static AuditLogResult List_AuditLogs(string procedure, List<Param_> param_ = null)
         {
             SqlConnection connection = new SqlConnection(connectionsql);
@@ -302,3 +277,5 @@ namespace crudcore.Resources
     }
 
 }
+
+

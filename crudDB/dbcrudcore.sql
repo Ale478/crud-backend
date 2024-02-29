@@ -63,8 +63,8 @@ BEGIN
 
         IF (@IdStatus IS NOT NULL AND @IdStatus BETWEEN 1 AND 2)
         BEGIN
-            INSERT INTO T_USERS (FirstName, LastName, Username, Email, Pass, IdStatus, UserCreation, DateCreation)
-            VALUES (@FirstName, @LastName, @Username, @Email, @Pass, @IdStatus, @Username, GETDATE());
+            INSERT INTO T_USERS (FirstName, LastName, Username, Email, Pass, IdStatus, UserCreation, DateCreation, ModifyBy)
+            VALUES (@FirstName, @LastName, @Username, @Email, @Pass, @IdStatus, @Username, GETDATE(), @Username);
 
             SET @IdUser = SCOPE_IDENTITY();
 
@@ -126,7 +126,8 @@ END;
 
 CREATE PROCEDURE sp_ReadUser(
     @IdUser INT = NULL,
-    @ShowAllUsers BIT = 0
+    @ShowAllUsers BIT = 0,
+    @ErrorMessage NVARCHAR(100) OUTPUT
 )
 AS
 BEGIN
@@ -150,12 +151,15 @@ BEGIN
                 U.UserCreation,
                 U.DateCreation,
                 U.UserModification,
-                U.DateModification
+                U.DateModification,
+				U.ModifyBy
             FROM T_USERS U
             INNER JOIN T_STATUS S ON U.IdStatus = S.IdStatus;
 
             INSERT INTO T_AUDIT_LOG (IdUser, AuditType, AuditDate, UserName)
             VALUES (@IdUser, 'read all', GETDATE(), @CurrentUsername);
+
+            SET @ErrorMessage = '';
         END
         ELSE
         BEGIN
@@ -171,18 +175,21 @@ BEGIN
                 U.UserCreation,
                 U.DateCreation,
                 U.UserModification,
-                U.DateModification
+                U.DateModification,
+				U.ModifyBy
             FROM T_USERS U
             INNER JOIN T_STATUS S ON U.IdStatus = S.IdStatus
             WHERE U.IdUser = @IdUser;
 
             INSERT INTO T_AUDIT_LOG (IdUser, AuditType, AuditDate, UserName)
             VALUES (@IdUser, 'read', GETDATE(), @CurrentUsername);
+
+            SET @ErrorMessage = '';
         END
     END
     ELSE
     BEGIN
-        SELECT 'User not found with IdUser provided' AS ErrorMessage;
+        SET @ErrorMessage = 'User not found with IdUser provided';
     END
 END;
 

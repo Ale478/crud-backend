@@ -14,8 +14,9 @@ namespace crudcore.Controllers
 
     public class UserController : ControllerBase
     {
+
         [HttpGet]
-        [Route("ReadUser")]
+        [Route("Read")]
         public dynamic ReadUser(int? idUser = null, bool? showAllUsers = null)
         {
             List<Param_> param_ = new List<Param_>();
@@ -30,32 +31,31 @@ namespace crudcore.Controllers
                 param_.Add(new Param_("@ShowAllUsers", showAllUsers.Value.ToString()));
             }
 
-            UserResult result = DBData.List_<TUser>("sp_ReadUser", param_);
+            param_.Add(new Param_("@ErrorMessage", ""));
 
-            if (result.Success)
-            {
-                return new
-                {
-                    success = true,
-                    message = "exito",
-                    result = new
-                    {
-                        user = result.Result
-                    }
-                };
-            }
-            else
+            DataTable tUser = DBData.List_("sp_ReadUser", param_);
+
+            if (tUser.Rows.Count == 0)
             {
                 return new
                 {
                     success = false,
-                    message = result.Message,
-                    result = new
-                    {
-                        user = new List<TUser>()
-                    }
+                    message = "User not found with IdUser provided",
+                    result = new List<TUser>()
                 };
             }
+
+            string jsonUser = JsonConvert.SerializeObject(tUser);
+
+            return new
+            {
+                success = true,
+                message = "exito",
+                result = new
+                {
+                    user = JsonConvert.DeserializeObject<List<TUser>>(jsonUser)
+                }
+            };
         }
 
         [HttpPost]
@@ -134,6 +134,8 @@ namespace crudcore.Controllers
 }
 
 
-   
- 
-   
+
+
+
+
+
