@@ -5,6 +5,8 @@ using crudcore.Models;
 using crudcore.Resources;
 using Newtonsoft.Json;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
+using System.Text;
+using System.Security.Cryptography;
 
 
 namespace crudcore.Controllers
@@ -62,17 +64,35 @@ namespace crudcore.Controllers
         [Route("CreateUser")]
         public UserResult CreateUser(TUser user)
         {
-            List<Param_> param_ = new List<Param_>
+            string encryptedPass = EncriptarPassword(user.Pass);
+
+                    List<Param_> param_ = new List<Param_>
             {
                 new Param_("@FirstName", user.FirstName),
                 new Param_("@LastName ", user.LastName),
                 new Param_("@Username ", user.Username),
                 new Param_("@Email", user.Email),
-                new Param_("@Pass", user.Pass),
+                new Param_("@Pass", encryptedPass),
                 new Param_("@IdStatus", user.IdStatus)
             };
 
             return DBData.UserCreate("sp_CreateUser", param_);
+        }
+
+        private string EncriptarPassword(string password)
+        {
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] inputBytes = Encoding.ASCII.GetBytes(password);
+                byte[] hash = sha256.ComputeHash(inputBytes);
+
+                StringBuilder sb = new StringBuilder();
+                for (int i = 0; i < hash.Length; i++)
+                {
+                    sb.Append(hash[i].ToString("x2"));
+                }
+                return sb.ToString();
+            }
         }
 
 
