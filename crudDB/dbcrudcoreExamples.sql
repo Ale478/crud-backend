@@ -60,10 +60,13 @@ EXEC sp_CreateUser @FirstName, @LastName,@Username, @Email, @Pass, @IdStatus;
 
 
 -- Validate user
-DECLARE @Email VARCHAR(100) = 'ale@gmail.com';
+DECLARE @Email VARCHAR(100) = 'sfsf@gmail.com';
 DECLARE @Pass VARCHAR(500) = 'a62039e2dd75ceffa3b72c632010c53a';
+DECLARE @Success BIT;
+DECLARE @ErrorMessage VARCHAR(500);
 
-EXEC sp_ValidateUser @Email, @Pass;
+EXEC sp_ValidateUser @Email, @Pass, @Success OUTPUT, @ErrorMessage OUTPUT;
+
 
 
 						   select * from T_USERS

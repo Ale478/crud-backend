@@ -30,7 +30,9 @@ CREATE TABLE T_USERS (
     DateCreation DATETIME,
     UserModification VARCHAR(100),
     DateModification DATETIME,
-	ModifyBy VARCHAR(100)
+	ModifyBy VARCHAR(100),
+	Role VARCHAR(100),
+	Token VARCHAR(100)
     FOREIGN KEY (IdStatus) REFERENCES T_STATUS(IdStatus)
 );
 
@@ -102,27 +104,46 @@ END;
 
 CREATE PROC sp_ValidateUser(
     @Email VARCHAR(100),
-    @Pass VARCHAR(500)
+    @Pass VARCHAR(500),
+    @Success BIT OUTPUT,
+    @ErrorMessage VARCHAR(500) OUTPUT
 )
 AS
 BEGIN
     DECLARE @IdUser INT;
 
-    SELECT @IdUser = IdUser FROM T_USERS WHERE Email = @Email AND Pass = @Pass AND IdStatus = 1;
+    SELECT @IdUser = IdUser FROM T_USERS WHERE Email = @Email AND IdStatus = 1;
 
     IF @IdUser IS NOT NULL
     BEGIN
-        SELECT @IdUser AS IdUser;
+        -- Verificar si la contraseña ingresada es correcta
+        IF (SELECT COUNT(*) FROM T_USERS WHERE IdUser = @IdUser AND Pass = @Pass) = 1
+        BEGIN
+            SELECT @IdUser AS IdUser;
 
-        INSERT INTO T_AUDIT_LOG (IdUser, AuditType, AuditDate, UserName)
-        VALUES (@IdUser, 'validate', GETDATE(), (SELECT Username FROM T_USERS WHERE IdUser = @IdUser));
+            INSERT INTO T_AUDIT_LOG (IdUser, AuditType, AuditDate, UserName)
+            VALUES (@IdUser, 'validate', GETDATE(), (SELECT Username FROM T_USERS WHERE IdUser = @IdUser));
+
+            SET @Success = 1;
+            SET @ErrorMessage = '';
+        END
+        ELSE
+        BEGIN
+            SET @Success = 0;
+            SET @ErrorMessage = 'La contraseña es incorrecta.';
+            SELECT '0' AS IdUser;
+        END
     END
     ELSE
     BEGIN
+        SET @Success = 0;
+        SET @ErrorMessage = 'El usuario no existe.';
         SELECT '0' AS IdUser;
     END
-END;
 
+    -- Agregar esta instrucción SELECT para devolver el mensaje de error
+    SELECT @Success AS Success, @ErrorMessage AS ErrorMessage;
+END;
 
 CREATE PROCEDURE sp_ReadUser(
     @IdUser INT = NULL,
@@ -295,3 +316,4 @@ END;
 
 							
 
+					

@@ -47,7 +47,7 @@ namespace crudcore.Resources
                 connection.Close();
             }
         }
-            public static DataTable List_(string procedure, List<Param_> param_ = null)
+        public static DataTable List_(string procedure, List<Param_> param_ = null)
         {
             SqlConnection connection = new SqlConnection(connectionsql);
 
@@ -274,8 +274,45 @@ namespace crudcore.Resources
 
             return result;
         }
-    }
+        public static bool ValidateUser(string email, string pass, out string errorMessage)
+        {
+            SqlConnection connection = new SqlConnection(connectionsql);
+            bool result = false;
 
+            try
+            {
+                connection.Open();
+                SqlCommand cmd = new SqlCommand("sp_ValidateUser", connection);
+                cmd.CommandType = CommandType.StoredProcedure;
+
+                cmd.Parameters.AddWithValue("@Email", email);
+                cmd.Parameters.AddWithValue("@Pass", pass);
+
+                SqlParameter successParam = cmd.Parameters.Add("@Success", SqlDbType.Bit);
+                successParam.Direction = ParameterDirection.Output;
+
+                SqlParameter errorParam = cmd.Parameters.Add("@ErrorMessage", SqlDbType.NVarChar, 500);
+                errorParam.Direction = ParameterDirection.Output;
+
+                cmd.ExecuteNonQuery();
+
+                result = (bool)successParam.Value;
+                errorMessage = (string)errorParam.Value;
+            }
+            catch (Exception ex)
+            {
+                result = false;
+                errorMessage = ex.Message;
+            }
+            finally
+            {
+                connection.Close();
+            }
+
+            return result;
+        }
+
+    }
 }
 
 
