@@ -52,7 +52,9 @@ namespace crudcore.Controllers
         [Route("Login")]
         public dynamic Login(TUser user)
         {
-            bool success = DBData.ValidateUser(user.Email, user.Pass, out string errorMessage);
+            string encryptedPass = EncriptarPassword(user.Pass);
+
+            bool success = DBData.ValidateUser(user.Email, encryptedPass, out string errorMessage);
 
             if (success)
             {
