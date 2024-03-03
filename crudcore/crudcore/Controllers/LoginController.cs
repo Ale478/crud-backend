@@ -37,13 +37,18 @@ namespace crudcore.Controllers
             {
                 response.Success = 0;
                 response.Msg = "Incorrect user or password";
-                return BadRequest();
+                return BadRequest(response);
+            }
+            else
+            {
+
+                response.Success = 1;
+                response.Data = userResponse;
+
+                return Ok(response);
+
             }
 
-            response.Success = 1;
-            response.Data = userResponse;
-
-            return Ok(response);
 
         }
 

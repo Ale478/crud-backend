@@ -19,18 +19,21 @@ namespace crudcore.Services
         {
             UserResponse userResponse = new UserResponse();
             string encryptedPass = EncriptarPassword(model.Password);
+            Response response = new Response();
 
             string errorMessage;
             bool isValid = DBData.ValidateUser(model.Email, encryptedPass, out errorMessage);
 
-            if (isValid)
+            if (!isValid)
             {
+       
+                userResponse = null;
+            }
+            else {
                 userResponse.Email = model.Email;
             }
-            else
-            {
-                userResponse.Error = errorMessage;
-            }
+
+           
 
             return userResponse;
         }
