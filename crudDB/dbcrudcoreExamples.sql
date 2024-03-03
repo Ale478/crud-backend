@@ -57,11 +57,11 @@ EXEC sp_CreateUser @FirstName, @LastName,@Username, @Email, @Pass, @IdStatus;
 
 
 
-
+			   SELECT * FROM T_USERS
 
 -- Validate user
-DECLARE @Email VARCHAR(100) = 'sfsf@gmail.com';
-DECLARE @Pass VARCHAR(500) = 'a62039e2dd75ceffa3b72c632010c53a';
+DECLARE @Email VARCHAR(100) = 'brensi@gmail.com';
+DECLARE @Pass VARCHAR(500) = 'a665a45920422f9d417e4867efdc4fb8a04a1f3fff1fa07e998e86f7f7a27ae3';
 DECLARE @Success BIT;
 DECLARE @ErrorMessage VARCHAR(500);
 
@@ -126,3 +126,11 @@ EXEC sp_GetAuditLogs @PageSize, @PageNumber, @IncludeDate, @AuditDate;
 -- Display status legend
 SELECT StatusName, StatusDescription
 FROM T_STATUS;
+
+
+DECLARE @IdUser INT;
+DECLARE @ErrorMessage NVARCHAR(100);
+
+EXEC sp_GetUserIdByEmail @Email = 'brensi@gmail.com', @IdUser = @IdUser OUTPUT, @ErrorMessage = @ErrorMessage OUTPUT;
+
+SELECT @IdUser AS IdUser, @ErrorMessage AS ErrorMessage;

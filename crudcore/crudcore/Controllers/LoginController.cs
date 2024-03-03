@@ -41,8 +41,8 @@ namespace crudcore.Controllers
             }
             else
             {
-
                 response.Success = 1;
+                response.Msg = "Authenticated successfully";
                 response.Data = userResponse;
 
                 return Ok(response);

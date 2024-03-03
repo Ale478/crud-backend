@@ -145,6 +145,29 @@ BEGIN
     SELECT @Success AS Success, @ErrorMessage AS ErrorMessage;
 END;
 
+
+CREATE PROCEDURE sp_GetUserIdByEmail(
+    @Email NVARCHAR(100),
+    @IdUser INT OUTPUT,
+    @ErrorMessage NVARCHAR(100) OUTPUT
+)
+AS
+BEGIN
+    SELECT @IdUser = IdUser FROM T_USERS WHERE Email = @Email;
+
+    IF @IdUser IS NULL
+    BEGIN
+        SET @ErrorMessage = 'User not found with Email provided';
+        SELECT @ErrorMessage AS ErrorMessage;
+    END
+    ELSE
+    BEGIN
+        INSERT INTO T_AUDIT_LOG (IdUser, AuditType, AuditDate, UserName)
+        VALUES (@IdUser, 'read by email', GETDATE(), (SELECT Username FROM T_USERS WHERE IdUser = @IdUser));
+        SELECT @IdUser AS IdUser;
+    END
+END;
+
 CREATE PROCEDURE sp_ReadUser(
     @IdUser INT = NULL,
     @ShowAllUsers BIT = 0,

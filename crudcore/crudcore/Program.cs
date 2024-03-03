@@ -1,4 +1,5 @@
 using crudcore.Models;
+using crudcore.Models.Commons;
 using crudcore.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
@@ -12,10 +13,29 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
+builder.Services.Configure<JwtConfig>(config =>
+{
+    config.SecretKey = "Lv1jj7fXCwnl2hEku0SzIaJixPMlHTxx3Py1mFZ6T9Spv72SGUaaTvNMEdV25brsojH3v4";
+});
+
 builder.Services.AddScoped<IUserService, UserService>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
+{
+    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+    {
+        ValidateIssuer = false,
+        ValidateAudience = false,
+        ValidateLifetime = false,
+        ValidateIssuerSigningKey = true,
+        ValidIssuer = builder.Configuration["JwtConfig:Issuer"],
+        ValidAudience = builder.Configuration["JwtConfig:Issuer"],
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtConfig:SecretKey"]))
+    };
+});
 
 builder.Services.AddControllersWithViews();
 
@@ -25,29 +45,6 @@ builder.Services.AddDbContext<DbcrudcoreContext>(options =>
         builder.Configuration.GetConnectionString("Connection")));
 builder.Services.AddControllers();
 
-builder.Services.AddAuthentication(configureOptions:options =>
-{
-    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultScheme =JwtBearerDefaults.AuthenticationScheme;
-    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-
-}).AddJwtBearer(jwt =>
-
-{
-    var key = (builder.Configuration.GetSection(key: "JwtConfig:SecretKey").ToString());
-    var keyBytes = Encoding.UTF8.GetBytes(key);
-
-    jwt.SaveToken = true;
-    jwt.TokenValidationParameters = new TokenValidationParameters()
-    {
-        ValidateIssuerSigningKey = true,
-        IssuerSigningKey = new SymmetricSecurityKey(keyBytes),
-        ValidateIssuer = false,
-        ValidateAudience = false,
-        RequireExpirationTime = false,
-        ValidateLifetime = true
-    };
-});
 
 
 var app = builder.Build();

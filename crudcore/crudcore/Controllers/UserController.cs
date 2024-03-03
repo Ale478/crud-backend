@@ -9,12 +9,16 @@ using System.Text;
 using System.Security.Cryptography;
 using crudcore.Models.Request;
 using crudcore.Services;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace crudcore.Controllers
 {
     [ApiController]
     [Route("User")]
+    [Authorize]
+
+
 
     public class UserController : ControllerBase
     {

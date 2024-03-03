@@ -280,7 +280,32 @@ namespace crudcore.Resources
             return result;
         }
 
+        public static TUser GetUserByEmail(string email)
+        {
+            List<Param_> param_ = new List<Param_>
+{
+            new Param_("@email", email),
+            new Param_("@IdUser", ""),
+            new Param_("@ErrorMessage", "")
+
+        };
+
+            var table = List_("sp_GetUserIdByEmail", param_);
+
+            if (table.Rows.Count == 0)
+            {
+                return null;
+            }
+
+            DataRow row = table.Rows[0];
+            return new TUser
+            {
+                IdUser = row["IdUser"].ToString(),
+            };
+        }
     }
+
 }
+
 
 
