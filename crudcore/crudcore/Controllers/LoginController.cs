@@ -6,6 +6,9 @@ using crudcore.Resources;
 using Newtonsoft.Json;
 using System.Text;
 using System.Security.Cryptography;
+using crudcore.Models.Request;
+using crudcore.Models.Response;
+using crudcore.Services;
 
 namespace crudcore.Controllers
 {
@@ -13,6 +16,39 @@ namespace crudcore.Controllers
     [Route("Login")]
     public class LoginController : ControllerBase
     {
+
+        private IUserService _userService;
+
+        public LoginController(IUserService userService)
+        {
+            _userService = userService;
+        }
+
+
+        [HttpPost]
+        [Route("Authenticate")]
+        public IActionResult Authenticate([FromBody] AuthRequest model)
+        {
+            Response response = new Response();
+
+            var userResponse = _userService.Auth(model);
+
+            if (userResponse == null)
+            {
+                response.Success = 0;
+                response.Msg = "Incorrect user or password";
+                return BadRequest();
+            }
+
+            response.Success = 1;
+            response.Data = userResponse;
+
+            return Ok(response);
+
+        }
+
+
+
         [HttpPost]
         [Route("Register")]
         public UserResult Register(TUser user)

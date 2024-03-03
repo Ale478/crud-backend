@@ -1,5 +1,7 @@
-using crudcore.Configuration;
+using crudcore.Models;
+using crudcore.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using NuGet.Protocol.Plugins;
 using System.Text;
@@ -9,11 +11,19 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 
 builder.Services.AddControllers();
+
+builder.Services.AddScoped<IUserService, UserService>();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.Configure<JwtConfiguration>(builder.Configuration.GetSection(key: "JwtConfig"));
+builder.Services.AddControllersWithViews();
+
+// Configure the DbContext
+builder.Services.AddDbContext<DbcrudcoreContext>(options =>
+    options.UseSqlServer(
+        builder.Configuration.GetConnectionString("Connection")));
+builder.Services.AddControllers();
 
 builder.Services.AddAuthentication(configureOptions:options =>
 {

@@ -7,6 +7,8 @@ using Newtonsoft.Json;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using System.Text;
 using System.Security.Cryptography;
+using crudcore.Models.Request;
+using crudcore.Services;
 
 
 namespace crudcore.Controllers
@@ -16,6 +18,7 @@ namespace crudcore.Controllers
 
     public class UserController : ControllerBase
     {
+      
 
         [HttpGet]
         [Route("Read")]
