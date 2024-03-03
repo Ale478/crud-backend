@@ -80,7 +80,6 @@ namespace crudcore.Controllers
                 new Param_("@Username ", user.Username),
                 new Param_("@Email", user.Email),
                 new Param_("@Pass", encryptedPass),
-                new Param_("@IdStatus", user.IdStatus)
             };
 
             return DBData.UserCreate("sp_CreateUser", param_);

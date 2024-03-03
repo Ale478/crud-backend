@@ -3,14 +3,14 @@ USE DBCRUDCORE
 
 -- Create a new user
 
-DECLARE @FirstName VARCHAR(100) = 'Alejandra';
-DECLARE @LastName VARCHAR(100) = 'Linares';
-DECLARE @Username VARCHAR(100) = 'ale478';
-DECLARE @Email VARCHAR(100) = 'ale@gmail.com';
+DECLARE @FirstName VARCHAR(100) = 'David';
+DECLARE @LastName VARCHAR(100) = 'Farias';
+DECLARE @Username VARCHAR(100) = 'defa88';
+DECLARE @Email VARCHAR(100) = 'david@gmail.com';
 DECLARE @Pass VARCHAR(500) = 'a62039e2dd75ceffa3b72c632010c53a';
-DECLARE @IdStatus INT = 1;
 
-EXEC sp_CreateUser @FirstName, @LastName,@Username, @Email, @Pass, @IdStatus;
+
+EXEC sp_CreateUser @FirstName, @LastName,@Username, @Email, @Pass;
 
 
 

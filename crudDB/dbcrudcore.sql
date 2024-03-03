@@ -51,8 +51,7 @@ CREATE PROC sp_CreateUser(
     @LastName VARCHAR(100),
     @Username VARCHAR(100),
     @Email VARCHAR(100),
-    @Pass VARCHAR(500),
-    @IdStatus INT
+    @Pass VARCHAR(500)
 )
 AS
 BEGIN
@@ -63,34 +62,29 @@ BEGIN
     BEGIN
         DECLARE @IdUser INT;
 
-        IF (@IdStatus IS NOT NULL AND @IdStatus BETWEEN 1 AND 2)
-        BEGIN
-            INSERT INTO T_USERS (FirstName, LastName, Username, Email, Pass, IdStatus, UserCreation, DateCreation, ModifyBy)
-            VALUES (@FirstName, @LastName, @Username, @Email, @Pass, @IdStatus, @Username, GETDATE(), @Username);
+        -- Set the status to 1 (active) by default
+        DECLARE @IdStatus INT = 1;
 
-            SET @IdUser = SCOPE_IDENTITY();
+        INSERT INTO T_USERS (FirstName, LastName, Username, Email, Pass, IdStatus, UserCreation, DateCreation, ModifyBy)
+        VALUES (@FirstName, @LastName, @Username, @Email, @Pass, @IdStatus, @Username, GETDATE(), @Username);
 
-            INSERT INTO T_AUDIT_LOG (IdUser, AuditType, AuditDate, UserName)
-            VALUES (@IdUser, 'create', GETDATE(), (SELECT Username FROM T_USERS WHERE IdUser = @IdUser));
+        SET @IdUser = SCOPE_IDENTITY();
 
-            SET @Register = 1;
-            SET @Message = 'registered user';
+        INSERT INTO T_AUDIT_LOG (IdUser, AuditType, AuditDate, UserName)
+        VALUES (@IdUser, 'create', GETDATE(), (SELECT Username FROM T_USERS WHERE IdUser = @IdUser));
 
-            UPDATE T_USERS
-            SET UserModification = @Username,
-                DateModification = GETDATE()
-            WHERE IdUser = @IdUser;
+        SET @Register = 1;
+        SET @Message = 'registered user';
 
-            UPDATE T_STATUS
-            SET UserModification = @Username,
-                DateModification = GETDATE()
-            WHERE IdStatus = @IdStatus;
-        END
-        ELSE
-        BEGIN
-            SET @Register = 0;
-            SET @Message = 'invalid status';
-        END
+        UPDATE T_USERS
+        SET UserModification = @Username,
+            DateModification = GETDATE()
+        WHERE IdUser = @IdUser;
+
+        UPDATE T_STATUS
+        SET UserModification = @Username,
+            DateModification = GETDATE()
+        WHERE IdStatus = @IdStatus;
     END
     ELSE
     BEGIN
