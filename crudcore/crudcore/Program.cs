@@ -11,8 +11,18 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll",
+        builder =>
+        {
+            builder.AllowAnyOrigin()
+                   .AllowAnyMethod()
+                   .AllowAnyHeader();
+        });
+});
 
+builder.Services.AddControllers();
 builder.Services.Configure<JwtConfig>(config =>
 {
     config.SecretKey = "Lv1jj7fXCwnl2hEku0SzIaJixPMlHTxx3Py1mFZ6T9Spv72SGUaaTvNMEdV25brsojH3v4";
@@ -57,6 +67,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseAuthentication();
+
+app.UseCors("AllowAll");
+
+app.UseRouting();
 
 app.UseAuthorization();
 

@@ -183,14 +183,9 @@ BEGIN
                 U.LastName,
                 U.Username,
                 U.Email,
-                U.IdStatus,
-                S.StatusName,
                 S.StatusDescription,
-                U.UserCreation,
                 U.DateCreation,
-                U.UserModification,
-                U.DateModification,
-				U.ModifyBy
+                U.DateModification
             FROM T_USERS U
             INNER JOIN T_STATUS S ON U.IdStatus = S.IdStatus;
 
@@ -207,14 +202,9 @@ BEGIN
                 U.LastName,
                 U.Username,
                 U.Email,
-                U.IdStatus,
-                S.StatusName,
                 S.StatusDescription,
-                U.UserCreation,
                 U.DateCreation,
-                U.UserModification,
-                U.DateModification,
-				U.ModifyBy
+                U.DateModification
             FROM T_USERS U
             INNER JOIN T_STATUS S ON U.IdStatus = S.IdStatus
             WHERE U.IdUser = @IdUser;

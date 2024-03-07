@@ -72,7 +72,7 @@ namespace crudcore.Controllers
             return DBData.UserCreate("sp_CreateUser", param_);
         }
 
-        private string EncriptarPassword(string password)
+        private string EncriptarPassword([FromBody] string password)
         {
             using (SHA256 sha256 = SHA256.Create())
             {
@@ -90,7 +90,7 @@ namespace crudcore.Controllers
 
         [HttpPost]
         [Route("Login")]
-        public dynamic Login(TUser user)
+        public dynamic Login([FromBody] TUser user)
         {
             string encryptedPass = EncriptarPassword(user.Pass);
 

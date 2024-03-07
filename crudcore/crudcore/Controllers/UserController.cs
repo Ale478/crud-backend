@@ -16,7 +16,7 @@ namespace crudcore.Controllers
 {
     [ApiController]
     [Route("User")]
-    [Authorize]
+    //[Authorize]
 
 
 
